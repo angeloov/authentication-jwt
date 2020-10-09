@@ -1,14 +1,14 @@
 {
   "name": "authentication-jwt",
   "version": "1.0.0",
-  "description": "",
+  "description": "JWT Authentication App",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Angelo Voicu",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",

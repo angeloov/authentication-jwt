@@ -7,14 +7,30 @@
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <h1>Register</h1>
-    <form id="form" onsubmit="formHandleRegister(event)">
-      <label for="username">Username: </label>
-      <input type="text" name="username" id="username-field">
-      <label for="password">Password: </label>
-      <input type="password" name="password" id="password-field">
-      <button>Login</button>
-    </form>
+    <h1 style="text-align: center">Register</h1>
+    <div class="centered">
+      <form id="form" onsubmit="formHandleRegister(event)">
+        <label for="username">Username: </label>
+        <input type="text" name="username" id="username-field" />
+        <label for="password">Password: </label>
+        <input type="password" name="password" id="password-field" />
+        <button>Login</button>
+      </form>
+    </div>
+
+    <!-- SEP -->
+    <h1 style="text-align: center">Login</h1>
+
+    <div class="centered">
+      <form id="form" onsubmit="formHandleLogin(event)">
+        <label for="username">Username: </label>
+        <input type="text" name="username" id="username-field-l" />
+        <label for="password">Password: </label>
+        <input type="password" name="password" id="password-field-l" />
+        <button>Login</button>
+      </form>
+    </div>
+
     <script src="client.js"></script>
   </body>
 </html>

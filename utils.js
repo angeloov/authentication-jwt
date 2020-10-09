@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 function validPassword(password, hash, salt) {
-  var hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  let hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
   return hash === hashVerify;
 }
 
@@ -22,6 +22,7 @@ function createJWT(user) {
 
   const payload = {
     id,
+    iat: Date.now(),
   };
 
   const signedToken = jwt.sign(payload, process.env.SECRET, { expiresIn: expiresIn });
