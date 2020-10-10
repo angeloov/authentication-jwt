@@ -1,3 +1,5 @@
+let JWT_Token;
+
 function formHandleRegister(e) {
   e.preventDefault();
   let username = document.querySelector('#username-field').value;
@@ -25,6 +27,19 @@ function formHandleLogin(e) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ username, password }),
+  })
+    .then(d => d.json())
+    .then(res => {
+      console.log(res);
+      JWT_Token = res.token;
+    });
+}
+
+function protectedRequest() {
+  fetch('http://localhost:3000/protected', {
+    headers: {
+      Authorization: JWT_Token,
+    },
   })
     .then(d => d.json())
     .then(res => console.log(res));

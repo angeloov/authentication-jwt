@@ -4,7 +4,7 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 const SECRET = process.env.SECRET;
 
 // DB Require
-const pool = require('./postgres.config');
+const pool = require('./db');
 
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
