@@ -1,7 +1,7 @@
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 
-const SECRET = process.env.SECRET;
+const SECRET = process.env.JWT_SECRET;
 
 // DB Require
 const pool = require('./db');

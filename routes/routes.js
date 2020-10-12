@@ -7,6 +7,8 @@ const utils = require('../utils');
 // Database
 const db = require('../config/db');
 
+const jwt = require('jsonwebtoken');
+
 /*
  * --------------- LOGIN ROUTE ---------------
  */
@@ -63,18 +65,19 @@ router.post('/register', (req, res) => {
  */
 
 router.get('/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
+  let userToken = req.headers['authorization'].split(' ')[1];
+  let userData = jwt.verify(userToken, process.env.JWT_SECRET);
+
+  const query = 'SELECT * FROM users WHERE id=$1';
+
+  db.query(query, [userData.id], (err, dbRes) => {
+    if (err) return next(err);
+
+    let username = dbRes.rows[0].username;
+    console.log('Request made by:', username);
+  });
+
   res.status(200).json({ message: 'Successfully accessed protected route! 🎉👌' });
-});
-
-/*
- * --------------- ERROR HANDLING ---------------
- */
-
-router.use((err, req, res, next) => {
-  const status = err.status || 500;
-  console.log(err.stack);
-  
-  res.status(status).json({ message: 'Something went wrong! Server error' });
 });
 
 module.exports = router;

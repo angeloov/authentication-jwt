@@ -20,27 +20,33 @@ function formHandleLogin(e) {
   let username = document.querySelector('#username-field-l').value;
   let password = document.querySelector('#password-field-l').value;
 
-  fetch('http://localhost:3000/login', {
-    method: 'POST',
-    credentials: 'include',
+  axios({
+    method: 'post',
+    url: 'http://localhost:3000/login',
+    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ username, password }),
-  })
-    .then(d => d.json())
-    .then(res => {
-      console.log(res);
-      JWT_Token = res.token;
-    });
+    data: { username: username, password: password },
+  }).then(res => {
+    console.log(res.data);
+    JWT_Token = res.data.token;
+  });
 }
 
 function protectedRequest() {
-  fetch('http://localhost:3000/protected', {
+  axios({
+    url: 'http://localhost:3000/protected',
     headers: {
       Authorization: JWT_Token,
     },
   })
-    .then(d => d.json())
-    .then(res => console.log(res));
+    .then(res => {
+      console.log(res.data);
+    })
+    .catch(err => {
+      err.response.status === 401
+        ? console.log("You're not authorized to do this")
+        : console.error("Server error!", err);
+    });
 }
