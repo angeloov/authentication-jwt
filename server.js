@@ -25,9 +25,9 @@ app.use('/', routes);
  */
 
 app.use((err, req, res, next) => {
-  const status = err.status || 500;
   console.log(err.stack);
-
+  
+  const status = err.status || 500;
   res.status(status).json({ message: 'Something went wrong! Server error' });
 });
 

@@ -18,14 +18,14 @@ function genPassword(password) {
 
 function createJWT(user) {
   const id = user.id;
-  const expiresIn = 60 * 10; // 10 minutes
+  const expiresIn = 60 * 5; // 5 minutes
 
   const payload = {
     id,
-    iat: Date.now(),
+    exp: Date.now() / 1000 + expiresIn,
   };
 
-  const signedToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: expiresIn });
+  const signedToken = jwt.sign(payload, process.env.JWT_SECRET);
 
   return {
     token: 'Bearer ' + signedToken,

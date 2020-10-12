@@ -27,6 +27,7 @@ module.exports = passport => {
           return done(null, user);
         } else return done(null, false);
       });
+      
     })
   );
 };
