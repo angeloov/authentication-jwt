@@ -12,7 +12,9 @@ function formHandleRegister(e) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ username, password }),
-  });
+  })
+    .then(res => res.json())
+    .then(data => console.log(data));
 }
 
 function formHandleLogin(e) {
@@ -20,18 +22,19 @@ function formHandleLogin(e) {
   let username = document.querySelector('#username-field-l').value;
   let password = document.querySelector('#password-field-l').value;
 
-  axios({
-    method: 'post',
-    url: 'http://localhost:3000/login',
-    withCredentials: true,
+  fetch('http://localhost:3000/login', {
+    method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
-    data: { username: username, password: password },
-  }).then(res => {
-    console.log(res.data);
-    JWT_Token = res.data.token;
-  });
+    body: JSON.stringify({ username, password }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      JWT_Token = data.accessToken;
+    });
 }
 
 function protectedRequest() {
@@ -44,9 +47,19 @@ function protectedRequest() {
     .then(res => {
       console.log(res.data);
     })
-    .catch(err => {
+    .catch(err => { // If the access token is expired
       err.response.status === 401
         ? console.log("You're not authorized to do this")
-        : console.error("Server error!", err);
+        : console.error('Server error!', err);
+
+      // Refresh the token
+      fetch('http://localhost:3000/refresh_token', { 
+        credentials: 'include',
+      })
+        .then(res => res.json())
+        .then(data => { // Take the new access token
+          JWT_Token = data.accessToken.token;
+          protectedRequest();
+        });
     });
 }
