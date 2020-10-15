@@ -19,7 +19,7 @@ function genPassword(password) {
 }
 
 function createJWT(user) {
-  const expiresIn = 60 * 0.1; // 5 minutes
+  const expiresIn = 60 * 0.2; // 5 minutes
 
   const payload = {
     id: user.id,
@@ -35,37 +35,31 @@ function createJWT(user) {
 }
 
 function createRefreshToken(user, next) {
-  const expiresIn = 60 * 60 * 24 * 7; // 7 days
-
   const payload = {
     id: user.id,
-    exp: Date.now / 1000 + expiresIn,
+    expiresIn: '7d',
   };
 
   let refreshToken;
-  // If there's no refresh token
-  if (!user.refresh_token) {
+
+  try {
+    if (!user.refresh_token) throw new Error('No refresh token in DB. Generate one');
+    
+    // Check if the refresh token is valid
+    jwt.verify(user.refresh_token, process.env.REFRESH_TOKEN_SECRET);
+
+    // If valid return the one that was in DB
+    return user.refresh_token;
+  } catch (err) {
+    // If refresh token is expired create a new one
     refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
 
-    const query = 'INSERT INTO users (refresh_token) VALUES ($1)';
+    const query = 'UPDATE users SET refresh_token=$1 WHERE id=$2';
 
-    db.query(query, [refreshToken], (err, res) => {
+    db.query(query, [refreshToken, user.id], (err, res) => {
       if (err) return next(err);
-      console.log('SUCCESS');
+      console.log('Generated a refresh token and put in DB');
     });
-  } else {
-    // If there's a refresh token in the DB
-
-    // Check if the token is valid, if not generate a new one
-    try {
-      jwt.verify(user.refresh_token, process.env.REFRESH_TOKEN_SECRET);
-    }
-    catch (err) {
-      refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET);
-
-      const query = 'UPDATE users SET refresh_token=$1';
-      db.query(query, [refreshToken], err => (err ? next(err) : null));
-    }
   }
 
   return refreshToken;

@@ -37,5 +37,4 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message: 'Something went wrong! Server error' });
 });
 
-
 app.listen(3000, () => console.log('Listening on port 3000'));

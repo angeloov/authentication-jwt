@@ -1,5 +1,6 @@
 const express = require('express');
 let router = express.Router();
+const crypto = require('crypto');
 
 const passport = require('passport');
 const utils = require('../utils');
@@ -49,14 +50,15 @@ router.post('/login', (req, res, next) => {
  * --------------- REGISTER ROUTE ---------------
  */
 
-router.post('/register', (req, res) => {
+router.post('/register', (req, res, next) => {
   const pwd = utils.genPassword(req.body.password);
 
   const hash = pwd.hash;
   const salt = pwd.salt;
+  const generatedUserID = crypto.randomBytes(32).toString('hex');
 
-  const query = 'INSERT INTO users(username, hash, salt) VALUES ($1, $2, $3)';
-  const values = [req.body.username, hash, salt];
+  const query = 'INSERT INTO users(id, username, hash, salt) VALUES ($1, $2, $3, $4)';
+  const values = [generatedUserID, req.body.username, hash, salt];
 
   db.query(query, values, err => {
     if (err) return next(err);
@@ -69,11 +71,17 @@ router.post('/register', (req, res) => {
  * --------------- PROTECTED ROUTE ---------------
  */
 
-router.get('/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.get('/protected', passport.authenticate('jwt', { session: false }), (req, res, next) => {
   let userToken = req.headers['authorization'].split(' ')[1];
-  let userData = jwt.verify(userToken, process.env.JWT_SECRET);
 
-  const query = 'SELECT * FROM users WHERE id=$1';
+  let userData;
+  try {
+    userData = jwt.verify(userToken, process.env.JWT_SECRET);
+  } catch (err) {
+    return next(err);
+  }
+
+  const query = 'SELECT username FROM users WHERE id=$1';
 
   db.query(query, [userData.id], (err, dbRes) => {
     if (err) return next(err);
@@ -85,22 +93,23 @@ router.get('/protected', passport.authenticate('jwt', { session: false }), (req,
   res.status(200).json({ message: 'Successfully accessed protected route! 🎉👌' });
 });
 
-router.get("/refresh_token", (req, res) => {
+router.get('/refresh_token', (req, res) => {
   // Read refresh token from cookie
-  console.log("RECIVED")
   let refreshToken = req.cookies.refreshToken;
-  
+
   // Validate token and check that it's not expired
   try {
     // If refresh token is valid
-    // Generate a new access token and send it to the user
+    // generate a new access token and send it to the user
     let user = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-  
+
     let newAccessToken = utils.createJWT(user, process.env.JWT_SECRET);
-    return res.json({ success: true, accessToken: newAccessToken });
+    return res.status(200).json({ success: true, accessToken: newAccessToken });
   } catch (err) {
     // If token is not valid log out the user
+    req.logOut();
+    return res.status(401).json({ success: false, message: 'The refresh token is expired' });
   }
-})
+});
 
 module.exports = router;

@@ -37,29 +37,31 @@ function formHandleLogin(e) {
     });
 }
 
-function protectedRequest() {
-  axios({
-    url: 'http://localhost:3000/protected',
-    headers: {
-      Authorization: JWT_Token,
-    },
-  })
-    .then(res => {
-      console.log(res.data);
-    })
-    .catch(err => { // If the access token is expired
-      err.response.status === 401
-        ? console.log("You're not authorized to do this")
-        : console.error('Server error!', err);
-
-      // Refresh the token
-      fetch('http://localhost:3000/refresh_token', { 
-        credentials: 'include',
-      })
-        .then(res => res.json())
-        .then(data => { // Take the new access token
-          JWT_Token = data.accessToken.token;
-          protectedRequest();
-        });
+async function protectedRequest() {
+  try {
+    let protectedCall = await axios({
+      url: 'http://localhost:3000/protected',
+      headers: {
+        Authorization: JWT_Token,
+      },
     });
+    console.log(protectedCall.data);
+  } catch (err) {
+    // If access token is expired
+    if (err.response.status === 401) {
+      // Unauthorized
+      // Refresh the token
+      (async () => {
+        let refreshAccessToken = await fetch('http://localhost:3000/refresh_token', {
+          credentials: 'include',
+        });
+        let newAccessToken = await refreshAccessToken.json();
+        console.log(newAccessToken);
+        console.log('new access token', newAccessToken.accessToken.token);
+        JWT_Token = newAccessToken.accessToken.token;
+
+        protectedRequest(); // Re-attempt request using new access token this time
+      })();
+    } else console.error('Server error!', err); // If another server error happens
+  }
 }

@@ -1,14 +1,12 @@
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 
-const SECRET = process.env.JWT_SECRET;
-
 // DB Require
 const pool = require('./db');
 
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: SECRET,
+  secretOrKey: process.env.JWT_SECRET,
 };
 
 module.exports = passport => {
@@ -17,6 +15,7 @@ module.exports = passport => {
     new JwtStrategy(options, function (jwt_payload, done) {
       // Check if there's someone with the id stored in the JWT
       const query = 'SELECT * FROM users WHERE id=$1';
+      console.log("payload", jwt_payload);
       const values = [jwt_payload.id];
 
       pool.query(query, values, (err, res) => {
@@ -27,7 +26,6 @@ module.exports = passport => {
           return done(null, user);
         } else return done(null, false);
       });
-      
     })
   );
 };
