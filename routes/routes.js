@@ -74,21 +74,9 @@ router.post('/register', (req, res, next) => {
 router.get('/protected', passport.authenticate('jwt', { session: false }), (req, res, next) => {
   let userToken = req.headers['authorization'].split(' ')[1];
 
-  let userData;
-  try {
-    userData = jwt.verify(userToken, process.env.JWT_SECRET);
-  } catch (err) {
-    return next(err);
-  }
+  let userData = jwt.verify(userToken, process.env.JWT_SECRET);
+  console.log("/protected route request -> id:", userData.id);
 
-  const query = 'SELECT username FROM users WHERE id=$1';
-
-  db.query(query, [userData.id], (err, dbRes) => {
-    if (err) return next(err);
-
-    let username = dbRes.rows[0].username;
-    console.log('Request made by:', username);
-  });
 
   res.status(200).json({ message: 'Successfully accessed protected route! 🎉👌' });
 });
@@ -106,7 +94,7 @@ router.get('/refresh_token', (req, res) => {
     let newAccessToken = utils.createJWT(user, process.env.JWT_SECRET);
     return res.status(200).json({ success: true, accessToken: newAccessToken });
   } catch (err) {
-    // If token is not valid log out the user
+    // If refresh token is not valid log out the user
     req.logOut();
     return res.status(401).json({ success: false, message: 'The refresh token is expired' });
   }

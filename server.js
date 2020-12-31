@@ -5,8 +5,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 
-const jwt = require('jsonwebtoken');
-
 app.use(express.static('public'));
 
 app.use(
@@ -32,9 +30,8 @@ app.use('/', routes);
 
 app.use((err, req, res, next) => {
   console.log(err.stack);
-
-  const status = err.status || 500;
-  res.status(status).json({ message: 'Something went wrong! Server error' });
+  
+  res.status(err.status || 500).json({ message: 'Something went wrong! Server error' });
 });
 
 app.listen(3000, () => console.log('Listening on port 3000'));

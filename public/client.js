@@ -49,18 +49,15 @@ async function protectedRequest() {
   } catch (err) {
     // If access token is expired
     if (err.response.status === 401) {
-      // Unauthorized
       // Refresh the token
       (async () => {
         let refreshAccessToken = await fetch('http://localhost:3000/refresh_token', {
           credentials: 'include',
         });
         let newAccessToken = await refreshAccessToken.json();
-        console.log(newAccessToken);
-        console.log('new access token', newAccessToken.accessToken.token);
         JWT_Token = newAccessToken.accessToken.token;
 
-        protectedRequest(); // Re-attempt request using new access token this time
+        protectedRequest(); // Re-attempt request using the new access token this time
       })();
     } else console.error('Server error!', err); // If another server error happens
   }
